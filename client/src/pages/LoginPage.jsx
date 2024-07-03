@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
 import { Container, Row, Col, Form, FormGroup, Button } from "reactstrap";
+import bgimage from '../assets/loginbg.jpg'
 
 const Login = () => {
   const [user, setUser] = useState({
@@ -56,7 +57,7 @@ const Login = () => {
 
     if (Object.keys(errorsTemp).length === 0) {
       try {
-        const res = await axios.post("http://localhost:9003/api/auth/login", user);
+        const res = await axios.post("http://localhost:9004/api/auth/login", user);
         if (res.data.success) {
           localStorage.setItem('token', res.data.token);
           alert(res.data.message);
@@ -77,60 +78,117 @@ const Login = () => {
   };
 
   return (
-    <div className="w-full items-center justify-center">
-      <section className="flex justify-center items-center h-3/6 p-12">
-        <Container className="flex justify-center items-center w-[100vw]">
-          <Row>
-            <Col lg="8" className="m-auto h-1/3">
-              <div className="login_container flex shadow-lg h-[60vh] w-[30vw]">
-                <div className="login_form p-8 bg-[#5AB2FF] relative w-full flex flex-col justify-center shadow-lg">
-                  <h2 className="text-center mb-8 text-7xl text-white font-comforter">
-                    Login
-                  </h2>
-                  <Form onSubmit={login} className="flex gap-4 flex-col">
-                    <FormGroup>
-                      <input
-                        type="text"
-                        name="email"
-                        value={user.email}
-                        onChange={handleChange}
-                        placeholder="Enter your Email"
-                        className="w-full p-2.5 rounded-lg border-none text-base"
-                      />
-                      <span className="text-red-700 ">{errors.email}</span>
-                    </FormGroup>
-                    <FormGroup>
-                      <input
-                        type="password"
-                        name="password"
-                        value={user.password}
-                        onChange={handleChange}
-                        placeholder="Enter your Password"
-                        className="w-full p-2.5 rounded-lg border-none text-base"
-                      />
-                      {errors.password && <p className="text-red-700">{errors.password}</p>}
-                    </FormGroup>
-                    <Button
-                      className="inline-block px-6 py-1 bg-white text-[#5AB2FF] font-medium border-2 rounded hover:bg-transparent hover:text-white transition-colors duration-300"
-                      type="submit"
-                    >
-                      Login
-                    </Button>
-                  </Form>
+  //   <div className="w-full items-center justify-center" style={{ backgroundImage: 'url(https://cdn.dribbble.com/users/1338391/screenshots/15318231/media/4c725fe4efbaa9d498f39f13600e396a.jpg)', backgroundSize: 'cover', backgroundAttachment: 'fixed' }}>
+  //   <section className="flex justify-center items-center h-screen p-12">
+  //     <Container className="flex justify-center items-center w-full">
+  //       <Row>
+  //         <Col lg="8" className="m-auto h-full">
+  //           <div className="login_container flex shadow-lg h-[60vh] w-[30vw] bg-white bg-opacity-10 backdrop-blur-md border border-opacity-30 rounded-lg">
+  //             <div className="login_form p-8   relative w-full flex flex-col justify-center shadow-lg rounded-lg">
+  //               <h2 className="text-center mb-8 text-5xl text-pink-600 font-comforter">
+  //                 Login
+  //               </h2>
+  //               <Form onSubmit={login} className="flex gap-4 flex-col">
+  //                 <FormGroup>
+  //                   <input
+  //                     type="text"
+  //                     name="email"
+  //                     value={user.email}
+  //                     onChange={handleChange}
+  //                     placeholder="Enter your Email"
+  //                     className="w-full p-2.5 rounded-lg border-none text-base focus:outline-none focus:ring-2 focus:ring-[#5AB2FF]"
+  //                     required
+  //                   />
+  //                   <span className="text-red-700">{errors.email}</span>
+  //                 </FormGroup>
+  //                 <FormGroup>
+  //                   <input
+  //                     type="password"
+  //                     name="password"
+  //                     value={user.password}
+  //                     onChange={handleChange}
+  //                     placeholder="Enter your Password"
+  //                     className="w-full p-2.5 rounded-lg border-none text-base focus:outline-none focus:ring-2 focus:ring-[#5AB2FF]"
+  //                     required
+  //                   />
+  //                   {errors.password && <p className="text-red-700">{errors.password}</p>}
+  //                 </FormGroup>
+  //                 <Button
+  //                   className="inline-block px-6 py-1 bg-white text-[#5AB2FF] font-medium border-2 rounded hover:bg-transparent hover:text-white transition-colors duration-300"
+  //                   type="submit"
+  //                 >
+  //                   Login
+  //                 </Button>
+  //               </Form>
+  //               <p className="text-white text-center mt-4">
+  //                 Don't have an account?{" "}
+  //                 <Link to="/register" className="text-[#FFFF80]">
+  //                   Create
+  //                 </Link>
+  //               </p>
+  //             </div>
+  //           </div>
+  //         </Col>
+  //       </Row>
+  //     </Container>
+  //   </section>
+  // </div>
 
-                  <p className="text-white text-center mt-4">
-                    Don't have an account?{" "}
-                    <Link to="/register" className="text-[#FFFF80]">
-                      Create
-                    </Link>
-                  </p>
-                </div>
-              </div>
-            </Col>
-          </Row>
-        </Container>
-      </section>
-    </div>
+  <div className="w-full items-center justify-center" style={{ backgroundImage: `url(${bgimage})`, backgroundSize: 'cover', backgroundAttachment: 'fixed' }}>
+  <section className="flex justify-center items-center h-screen p-12">
+    <Container className="flex justify-center items-center w-full">
+      <Row>
+        <Col lg="8" className="m-auto h-full">
+          <div className=" flex shadow-2xl h-[60vh] w-[30vw] backdrop-blur-sm bg-white bg-opacity-20  rounded-lg">
+            <div className="login_form p-8  relative w-full flex flex-col justify-center shadow-lg rounded-lg">
+              <h2 className="text-center font-medium antialiased mb-4 text-6xl text-purple-800 font-comforter">
+                Login
+              </h2>
+              <Form onSubmit={login} className="flex gap-4 flex-col">
+                <FormGroup className="relative pt-4 mb-6 flex flex-col">
+                  <input
+                    type="text"
+                    name="email"
+                    value={user.email}
+                    onChange={handleChange}
+                    placeholder="Enter your Email"
+                    className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100   placeholder-purple-900"
+                    required
+                  />
+                  {errors.email && <span className="text-red-700 mt-2">{errors.email}</span>}
+                </FormGroup>
+                <FormGroup className="relative pt-4 mb-6 flex flex-col">
+                  <input
+                    type="password"
+                    name="password"
+                    value={user.password}
+                    onChange={handleChange}
+                    placeholder="Enter your Password"
+                    className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 text-black  placeholder-purple-900"
+                    required
+                  />
+                  {errors.password && <span className="text-red-700 mt-2">{errors.password}</span>}
+                </FormGroup>
+                <Button
+                  className="inline-block px-6 py-1  text-purple-800 font-medium border-2 border-black rounded hover:bg-purple-800 hover:text-white transition-colors duration-300"
+                  type="submit"
+                >
+                  Login
+                </Button>
+              </Form>
+              <p className="text-black text-center mt-4">
+                Don't have an account? 
+                <Link to="/register" className="text-lg font-semibold text-purple-600">
+                   Create
+                </Link>
+              </p>
+            </div>
+          </div>
+        </Col>
+      </Row>
+    </Container>
+  </section>
+</div>
   );
 };
 

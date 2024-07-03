@@ -1,6 +1,6 @@
 import React from 'react';
 
-const Pagination = ({ totalPages, paginate, currentPage }) => {
+const Pagination = ({ totalPages, currentPage, paginate, prevPage, nextPage }) => {
   const pageNumbers = [];
 
   for (let i = 1; i <= totalPages; i++) {
@@ -10,20 +10,47 @@ const Pagination = ({ totalPages, paginate, currentPage }) => {
   return (
     <nav className="flex justify-center my-4">
       <ul className="inline-flex items-center -space-x-px gap-2">
+        {/* Previous Button */}
+        <li className="page-item">
+          <button
+            onClick={() => prevPage()}
+            className={`px-3 py-1 cursor-pointer rounded-full border ${
+              currentPage === 1 ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-800 hover:bg-gray-400 hover:duration-300 hover:ease-linear'
+            }`}
+            disabled={currentPage === 1}
+          >
+            Previous
+          </button>
+        </li>
+
+        {/* Page Numbers */}
         {pageNumbers.map((number) => (
           <li key={number} className="page-item">
             <button
               onClick={() => paginate(number)}
-              className={`px-3 py-2 leading-tight border rounded-lg transition-colors duration-300 ${
-                number === currentPage
-                  ? 'bg-blue-500 text-white border-blue-500'
-                  : 'bg-white text-blue-500 border-gray-300 hover:bg-blue-100 hover:text-blue-700'
+              className={`px-3 py-1 cursor-pointer rounded-full border ${
+                number === currentPage 
+                  ? "bg-gray-800 text-white"
+                  : "bg-gray-200 text-gray-800 hover:bg-gray-400 hover:duration-300 hover:ease-linear"
               }`}
             >
               {number}
             </button>
           </li>
         ))}
+
+        {/* Next Button */}
+        <li className="page-item">
+          <button
+            onClick={() => nextPage()}
+            className={`px-3 py-1 cursor-pointer rounded-full border ${
+              currentPage === totalPages ? 'bg-gray-200 text-gray-500 cursor-not-allowed' : 'bg-gray-200 text-gray-800 hover:bg-gray-400 hover:duration-300 hover:ease-linear'
+            }`}
+            disabled={currentPage === totalPages}
+          >
+            Next
+          </button>
+        </li>
       </ul>
     </nav>
   );

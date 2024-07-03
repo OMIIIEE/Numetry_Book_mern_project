@@ -1,267 +1,259 @@
-import React, { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from "react";
+import axios from "axios";
+import { FaEdit, FaSave, FaTimes, FaTrashAlt } from "react-icons/fa";
+import Pagination from "./Pagination";
 
-const BookDetails = ({ books, setBooks }) => {
-  const [editMode, setEditMode] = useState(false);
-  const [editedBook, setEditedBook] = useState(null);
+const BookDetails = ({}) => {
+  const [publishers, setPublishers] = useState([]);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [booksPerPage] = useState(5);
+  const [editingBookId, setEditingBookId] = useState(null);
+  const [editedBook, setEditedBook] = useState({});
 
-  // Function to aggregate user purchases
-  const aggregateUserPurchases = (userPurchases) => {
-    if (!userPurchases || userPurchases.length === 0) {
-      return [];
-    }
-
-    const userMap = new Map();
-
-    // Aggregate quantities per user
-    userPurchases.forEach((purchase) => {
-      const { user, quantity } = purchase;
-      if (userMap.has(user)) {
-        userMap.set(user, userMap.get(user) + quantity);
-      } else {
-        userMap.set(user, quantity);
+  useEffect(() => {
+    const fetchPublishers = async () => {
+      try {
+        const response = await axios.get("http://localhost:9004/api/auth/books/publishers");
+        setPublishers(response.data.publishers);
+      } catch (error) {
+        console.error("Error fetching publishers:", error);
       }
-    });
+    };
 
-    // Convert Map to array of objects
-    const aggregatedPurchases = Array.from(
-      userMap,
-      ([user, totalCopiesBought]) => ({ user, totalCopiesBought })
-    );
+    fetchPublishers();
+  }, []);
 
-    return aggregatedPurchases;
-  };
+  const totalPages = Math.ceil(publishers.length / booksPerPage);
+  const indexOfLastBook = currentPage * booksPerPage;
+  const indexOfFirstBook = indexOfLastBook - booksPerPage;
+  const currentPublishers = publishers.slice(indexOfFirstBook, indexOfLastBook);
 
-  // Function to handle edit mode
+  const paginate = (pageNumber) => setCurrentPage(pageNumber);
+
   const handleEdit = (book) => {
-    setEditMode(true);
-    setEditedBook({
-      ...book,
-      newTotalCopies: book.originalCopies , // Initialize newTotalCopies with current originalCopies
-    });
+    setEditingBookId(book._id);
+    setEditedBook({ ...book });
   };
 
-  // Function to handle cancel edit mode
   const handleCancelEdit = () => {
-    setEditMode(false);
-    setEditedBook(null);
+    setEditingBookId(null);
+    setEditedBook({});
   };
 
-  // Function to handle save edit
   const handleSaveEdit = async () => {
     try {
-      const token = localStorage.getItem('token');
-      const newTotalAvailable = editedBook.newTotalCopies - editedBook.totalBought;
-      const response = await axios.put(
-        `http://localhost:9003/api/auth/books/${editedBook._id}`,
-        {
-          copies: editedBook.newTotalCopies,
-          // originalCopies: editedBook.newTotalCopies,
-          // totalAvailable: newTotalAvailable,
-        },
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      const updatedBook = response.data.book;
-
-      // Update state with updated book
-      // const updatedBooks = books.map((book) =>
-      //   book._id === updatedBook._id ? updatedBook : book
-      // );
-
-      // Update state with updated book
-       const updatedBooks = books.map((book) =>
-        book._id === updatedBook._id
-          ? {
-              ...book,
-              originalCopies: editedBook.newTotalCopies,
-              totalAvailable: editedBook.newTotalCopies - book.totalBought,
-            }
-          : book
-      );
-
-      setBooks(updatedBooks); // Update books state with the updatedBooks array
-      setEditMode(false);
-      setEditedBook(null);
+      // Update the book in the backend
+      await axios.put(`http://localhost:9004/api/auth/books/${editedBook._id}`, editedBook);
+      
+      // Update the book in the frontend
+      const updatedPublishers = publishers.map(publisher => ({
+        ...publisher,
+        authors: publisher.authors.map(author => ({
+          ...author,
+          books: author.books.map(book => (book._id === editedBook._id ? editedBook : book))
+        }))
+      }));
+      setPublishers(updatedPublishers);
+      
+      // Clear edit mode
+      setEditingBookId(null);
+      setEditedBook({});
     } catch (error) {
-      console.error('Error updating book:', error);
-      // Handle error state or notification
+      console.error("Error saving book:", error);
     }
   };
 
-  // Function to handle delete
-  const handleDelete = async (id) => {
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setEditedBook(prevState => ({
+      ...prevState,
+      [name]: value
+    }));
+  };
+
+  const handleDelete = async (bookId) => {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.delete(
-        `http://localhost:9003/api/auth/books/${id}`,
-        {
-          headers: { Authorization: `Bearer ${token}` },
-        }
-      );
-
-      alert(
-        `Book "${books.find((book) => book._id === id)?.name}" has been deleted successfully!`
-      );
-
-      if (response.data.success) {
-        // Remove the deleted book from the state
-        setBooks(books.filter((book) => book._id !== id));
-      } else {
-        console.log('Failed to delete book:', response.data.message);
-      }
+      // Delete the book from the backend
+      await axios.delete(`http://localhost:9004/api/auth/books/${bookId}`);
+      
+      // Delete the book from the frontend
+      const updatedPublishers = publishers.map(publisher => ({
+        ...publisher,
+        authors: publisher.authors.map(author => ({
+          ...author,
+          books: author.books.filter(book => book._id !== bookId)
+        }))
+      }));
+      setPublishers(updatedPublishers);
     } catch (error) {
-      console.error('Error deleting book:', error);
+      console.error("Error deleting book:", error);
     }
   };
 
   return (
     <div className="container p-8 w-full flex flex-col items-center">
       <h2 className="text-3xl mb-6">Book Details</h2>
-      {books.length === 0 ? (
+      {publishers.length === 0 ? (
         <div>Loading...</div>
       ) : (
-        <div className="overflow-x-auto w-[1300px]">
-          <table className="min-w-full w-full divide-y divide-gray-200 border border-gray-300 rounded-lg shadow-lg">
+        <div className="overflow-x-auto w-[1400px]">
+          <table className="min-w-full divide-y divide-gray-200 border border-gray-300 rounded-lg shadow-lg">
             <thead className="bg-gray-50">
               <tr>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Publisher Name
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Authors
+                </th>
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
                   Book Name
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Author
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Total Available
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Total Copies Published
+                <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Publish Date
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Available Copies
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Price
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Total Copies Bought
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
+                  Genre
                 </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
-                  Copies Bought by Users
-                </th>
-                <th
-                  scope="col"
-                  className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                >
+                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider border border-gray-300">
                   Actions
                 </th>
               </tr>
             </thead>
             <tbody className="bg-white divide-y divide-gray-200">
-              {books.map((book) => (
-                <tr key={book._id}>
-                   <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {book.name}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.author}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
-                    {editMode && editedBook?._id === book._id ? (
-                      <input
-                        type="number"
-                        className="border rounded-md px-2 py-1"
-                        value={editedBook.newTotalCopies}
-                        onChange={(e) =>
-                          setEditedBook({
-                            ...editedBook,
-                            newTotalCopies: parseInt(e.target.value, 10),
-                          })
-                        }
-                      />
-                    ) : (
-                      book.originalCopies
-                    )}
-                  </td>
-                 
-                  {/* <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.originalCopies}
-                  </td> */}
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {editMode && editedBook?._id === book._id
-                      ? editedBook.newTotalCopies - book.totalBought
-                      : book.totalAvailable}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {book.totalBought}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 ">
-                    {aggregateUserPurchases(book.userPurchases).map(
-                      (purchase, index) => (
-                        <div key={index} className="flex items-center">
-                          <div className="mr-2">{purchase.user}</div>
-                          <div className="px-2 py-1 rounded-md">
-                            {purchase.totalCopiesBought}
-                          </div>
-                        </div>
-                      )
-                    )}
-                  </td>
-                  <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                    {editMode && editedBook?._id === book._id ? (
-                      <>
-                        <button
-                          className="bg-blue-500 text-white px-4 py-2 rounded-md mr-2"
-                          onClick={handleSaveEdit}
-                        >
-                          Save
-                        </button>
-                        <button
-                          className="bg-gray-500 text-white px-4 py-2 rounded-md"
-                          onClick={handleCancelEdit}
-                        >
-                          Cancel
-                        </button>
-                      </>
-                    ) : (
-                      <>
-                        <button
-                          className="bg-yellow-500 text-white px-4 py-2 rounded-md mr-2"
-                          onClick={() => handleEdit(book)}
-                        >
-                          Edit
-                        </button>
-                        <button
-                          className="bg-red-500 text-white px-4 py-2 rounded-md"
-                          onClick={() => handleDelete(book._id)}
-                        >
-                          Delete
-                        </button>
-                      </>
-                    )}
-                  </td>
-                </tr>
-              ))}
+              {currentPublishers.map((publisher) => {
+                const authorCount = publisher.authors.reduce(
+                  (count, author) => count + author.books.length,
+                  0
+                );
+
+                return (
+                  <React.Fragment key={publisher._id}>
+                    {publisher.authors.map((author, authorIndex) => (
+                      <React.Fragment key={author._id}>
+                        {author.books.map((book, bookIndex) => (
+                          <tr key={book._id}>
+                            {authorIndex === 0 && bookIndex === 0 && (
+                              <td
+                                rowSpan={authorCount}
+                                className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 border border-gray-300"
+                              >
+                                {publisher.publisherName}
+                              </td>
+                            )}
+                            {bookIndex === 0 && (
+                              <td
+                                rowSpan={author.books.length}
+                                className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300"
+                              >
+                                <div className="font-bold">{author._id}</div>
+                              </td>
+                            )}
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                              {editingBookId === book._id ? (
+                                <input
+                                  type="text"
+                                  name="name"
+                                  value={editedBook.name}
+                                  onChange={handleChange}
+                                  className="border border-gray-300 px-2 py-1 rounded-md"
+                                />
+                              ) : (
+                                book.name
+                              )}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                              {editingBookId === book._id ? (
+                                <input
+                                  type="number"
+                                  name="copies"
+                                  value={editedBook.copies}
+                                  onChange={handleChange}
+                                  className="border border-gray-300 px-2 py-1 rounded-md"
+                                />
+                              ) : (
+                                book.copies
+                              )}
+                            </td>
+                            <td className="pl-4 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                            {new Date(book.publishDate).toISOString().substr(0, 10)}
+                            </td>
+                            <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                            {editingBookId === book._id ? (
+                                <input
+                                  type="number"
+                                  name="price"
+                                  value={editedBook.price}
+                                  onChange={handleChange}
+                                  className="border border-gray-300 px-2 py-1 rounded-md"
+                                />
+                              ) : (
+                                book.price
+                              )}
+                            </td>
+                            <td className="pl-4 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                            {book.category}
+                            </td>
+                            <td className="pl-4 py-4 whitespace-nowrap text-sm text-gray-500 border border-gray-300">
+                              {editingBookId === book._id ? (
+                                <>
+                                  <button
+                                    className="text-green-500 px-2 py-2 mr-2"
+                                    onClick={handleSaveEdit}
+                                  >
+                                    <FaSave />
+                                  </button>
+                                  <button
+                                    className="text-gray-500 px-2 py-2"
+                                    onClick={handleCancelEdit}
+                                  >
+                                    <FaTimes />
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  <button
+                                    className="text-yellow-500 px-2 py-2 mr-2"
+                                    onClick={() => handleEdit(book)}
+                                  >
+                                    <FaEdit />
+                                  </button>
+                                  <button
+                                    className="text-red-500 px-2 py-2"
+                                    onClick={() => handleDelete(book._id)}
+                                  >
+                                    <FaTrashAlt />
+                                  </button>
+                                </>
+                              )}
+                            </td>
+                          </tr>
+                        ))}
+                      </React.Fragment>
+                    ))}
+                  </React.Fragment>
+                );
+              })}
             </tbody>
           </table>
         </div>
       )}
+      <Pagination
+        totalPages={totalPages}
+        paginate={paginate}
+        currentPage={currentPage}
+      />
     </div>
   );
 };
 
 export default BookDetails;
+
+
+

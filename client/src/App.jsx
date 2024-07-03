@@ -10,6 +10,9 @@ import Wishlist from "./pages/Wishlist";
 import axios from "axios";
 import { WishlistProvider } from "./ContextAPI/WishlistContext";
 import BookDetails from "./components/BookDetails";
+import Orders from "./components/Orders";
+import HomePage from "./pages/HomePage";
+import OtpVerification from "./pages/OtpVerification"
 
 function App() {
   return (
@@ -18,7 +21,7 @@ function App() {
       <Router>
         <Routes>
          
-            <Route path="/" element={<Login />} />
+            <Route path="/" element={<HomePage />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Register />} />
 
@@ -26,7 +29,8 @@ function App() {
             <Route path="/admin-dashboard" element={<AdminDashboard />} />
             <Route path="/add-book" element={<AddBookForm />} />
             <Route path="/wishlist" element={<Wishlist />} />
-
+            <Route path="/orders" element={<Orders />} />
+            <Route path="/verify-otp" element={<OtpVerification/>} />
           
         </Routes>
       </Router>

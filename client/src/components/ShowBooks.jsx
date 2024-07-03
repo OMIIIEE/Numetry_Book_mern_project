@@ -1,54 +1,95 @@
+
+
 import React, { useState, useEffect } from "react";
-import axios from "axios";
 import BookList from "./BookList";
 import Pagination from "./Pagination";
 
-const ShowBooks = ({books ,wishlist, onToggleWishlist ,user}) => {
-  // const [books, setBooks] = useState([]);
+const ShowBooks = ({ books, wishlist, onToggleWishlist, user,categorisedBooks }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [booksPerPage] = useState(8);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [filteredBooks, setFilteredBooks] = useState([]);
+  
+  // Total pages for pagination
+  const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
 
-  const[currentPage, setCurrentPage] = useState(1);
-  const [booksPerPage] = useState(8); 
+  // Handle search input change
+  const handleSearchInputChange = (query) => {
+    setSearchQuery(query);
+  };
 
-  // useEffect(() => {
-  //   const fetchBookData = async () => {
-  //     try {
-  //       const token = localStorage.getItem("token");
-  //       const res = await axios.get("http://localhost:9003/api/auth/books", {
-  //         headers: { Authorization: `Bearer ${token}` },
-  //       });
-  //       console.log("Fetched books data:", res.data.books); // Log the fetched data
-  //       setBooks(res.data.books);
-  //     } catch (error) {
-  //       console.error("Error fetching Book data:", error);
-  //     }
-  //   };
-  //   fetchBookData();
-  // }, []);
+  // Filter books based on search query
+  useEffect(() => {
+    if (searchQuery.trim() === "") {
+      setFilteredBooks(books);
+    } else {
+      const lowercasedQuery = searchQuery.toLowerCase();
+      const filteredData = books.filter(
+        (book) =>
+          book.name.toLowerCase().includes(lowercasedQuery) ||
+          (book.authorName &&
+            book.authorName.toLowerCase().includes(lowercasedQuery)) ||
+          (book.publisherName &&
+            book.publisherName.toLowerCase().includes(lowercasedQuery))
+      );
+      setFilteredBooks(filteredData);
+    }
+    setCurrentPage(1); // Reset to first page after filtering
+  }, [books, searchQuery]);
 
-
-  // Calculate total pages
-  const totalPages = Math.ceil(books.length / booksPerPage);
-
-  // Get current books
+  // Get current books for pagination
   const indexOfLastBook = currentPage * booksPerPage;
   const indexOfFirstBook = indexOfLastBook - booksPerPage;
-  const currentBooks = books.slice(indexOfFirstBook, indexOfLastBook);
+  const currentBooks = filteredBooks.slice(indexOfFirstBook, indexOfLastBook);
 
-  // Change page
+  // Handle pagination change
   const paginate = (pageNumber) => setCurrentPage(pageNumber);
 
 
+    // Function to handle previous page
+    const prevPage = () => {
+      if (currentPage > 1) {
+        setCurrentPage(currentPage - 1);
+      }
+    };
+  
+    // Function to handle next page
+    const nextPage = () => {
+      if (currentPage < totalPages) {
+        setCurrentPage(currentPage + 1);
+      }
+    };
+  
   return (
-    <div className="items-center text-center mt-4">
-      Books Available
-      {/* <BookList books={books}/> */}
-      <div className="p-8">
-      <BookList user={user} books={currentBooks}
-          wishlist={wishlist}
-          onToggleWishlist={onToggleWishlist}/>
+    <div className="items-center text-center mt-8">
+      <div className="text-3xl md:text-5xl mb-4 text-[#FDC702] font-comforter">Books Available</div>
 
-        <Pagination  totalPages={totalPages} paginate={paginate} currentPage={currentPage} />
-      </div>
+      {/* Search Bar */}
+      <input
+        type="text"
+        placeholder="Search books..."
+        value={searchQuery}
+        onChange={(e) => handleSearchInputChange(e.target.value)}
+        className="px-4 py-2 w-1/2 border rounded-lg mb-4 focus:outline-none focus:border-blue-800 bg-gradient-to-b from-amber-500 to-pink-500 text-white placeholder-white"
+      />
+
+      {/* Display filtered books */}
+      <BookList
+        user={user}
+        books={currentBooks}
+        wishlist={wishlist}
+        onToggleWishlist={onToggleWishlist}
+        categorisedBooks={categorisedBooks}
+      />
+
+      {/* Pagination */}
+      <Pagination
+        totalPages={totalPages}
+        currentPage={currentPage}
+        paginate={paginate}
+        prevPage={prevPage}
+        nextPage={nextPage}
+      />
     </div>
   );
 };

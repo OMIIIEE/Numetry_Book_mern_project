@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import axios from "axios";
 import { Link, useNavigate } from "react-router-dom";
-
+import bgimage from '../assets/register bg.jpg'
 import {
   Container,
   Row,
@@ -168,139 +168,126 @@ const Register = () => {
     if (validateForm()) {
     try {
       // const role = email.endsWith("numetry.com") ? "admin" : "user";
-      const res = await axios.post("http://localhost:9003/api/auth/register", {
+      const res = await axios.post("http://localhost:9004/api/auth/register", {
         ...user,  
       });
       console.log(res);
-      // sendPhoneOtp();
+     
       alert(res.data.message);
 
       if (res.data.success) {
-        // sendPhoneOtp();
+        
         navigate("/login");
-        // sendPhoneOtp();
+        // navigate("/verify-otp", { state: { email: user.email } });
+        
       }
     } catch (err) {
-      console.error(err);
+      // console.error(err);
       alert("Registration failed. Please try again.");
     }
     }
   };
 
   return (
-    <div className="w-full items-center justify-center">
-      <section className="flex justify-center items-center h-3/4 p-12">
-        <div className="container mx-auto flex justify-center items-center w-full">
-          {/* <div className="flex  shadow-lg w-3/4"> */}
-          {/* <div className="w-3/5 flex items-center justify-center">
-              <img
-                src={loginImg}
-                alt="login"
-                className="w-4/5 object-contain h-3/4"
-              />
-            </div> */}
-          <div className="login_form p-8 bg-[#5AB2FF] relative w-2/4 flex flex-col justify-center h-auto overflow-y-auto">
-            <div className="user h-20 absolute -top-10 left-1/2 transform -translate-x-1/2 -translate-y-1/2"></div>
-
-            <h2 className="text-center mb-6 text-7xl text-white font-comforter">
+    <div className="w-full items-center justify-center" style={{ backgroundImage: `url(${bgimage})`, backgroundSize: 'cover', backgroundAttachment: 'fixed' }}>
+    <section className="flex justify-center items-center h-screen p-12">
+      <div className="container mx-auto flex justify-center items-center w-full">
+        <div className="flex shadow-2xl h-auto w-[30vw] backdrop-blur-sm bg-white bg-opacity-30 rounded-lg">
+          <div className="login_form p-8 relative w-full flex flex-col justify-center shadow-lg rounded-lg">
+            <h2 className="text-center font-medium antialiased mb-4 text-6xl text-[#0D014D] font-comforter">
               Register
             </h2>
-            <Form onSubmit={register} className="flex gap-4 flex-col">
-              <FormGroup>
+            <Form onSubmit={register} className="flex  flex-col">
+              <FormGroup className="relative pt-4 mb-2 flex flex-col">
                 <input
                   type="text"
                   name="name"
                   value={user.name}
                   onChange={handleChange}
                   placeholder="Enter your Full Name"
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white"
+                  required
                 />
-                {errors.name && <p className="text-red-700">{errors.name}</p>}
+                {errors.name && <span className="text-red-700 mt-2">{errors.name}</span>}
               </FormGroup>
-              <FormGroup>
+              <FormGroup className="relative pt-4 mb-2 flex flex-col">
                 <input
                   type="text"
                   name="username"
                   value={user.username}
                   onChange={handleChange}
-                  placeholder="Enter your username"
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  placeholder="Enter your Username"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white"
+                  required
                 />
-                {errors.username && (
-                  <p className="text-red-700">{errors.username}</p>
-                )}
+                {errors.username && <span className="text-red-700 mt-2">{errors.username}</span>}
               </FormGroup>
-              <FormGroup>
+              <FormGroup className="relative pt-4 mb-2 flex flex-col">
                 <input
-                  type="text"
+                  type="email"
                   name="email"
                   value={user.email}
                   onChange={handleChange}
                   placeholder="Enter your Email"
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white"
+                  required
                 />
-                {errors.email && <p className="text-red-700">{errors.email}</p>}
+                {errors.email && <span className="text-red-700 mt-2">{errors.email}</span>}
               </FormGroup>
-
-              <FormGroup>
+              <FormGroup className="relative pt-4 mb-2 flex flex-col">
                 <input
                   type="text"
                   name="phone"
                   value={user.phone}
                   onChange={handleChange}
                   placeholder="Enter your Phone No."
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white"
+                  required
                 />
-                {errors.phone && <p className="text-red-700">{errors.phone}</p>}
+                {errors.phone && <span className="text-red-700 mt-2">{errors.phone}</span>}
               </FormGroup>
-
-              <FormGroup>
+              <FormGroup className="relative pt-4 mb-2 flex flex-col">
                 <input
                   type="password"
                   name="password"
                   value={user.password}
                   onChange={handleChange}
                   placeholder="Enter your Password"
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white"
+                  required
                 />
-                {errors.password && (
-                  <p className="text-red-700 text-sm">{errors.password}</p>
-                )}
+                {errors.password && <span className="text-red-700 mt-2">{errors.password}</span>}
               </FormGroup>
-              <FormGroup>
+              <FormGroup className="relative pt-4 mb-6 flex flex-col">
                 <input
                   type="password"
                   name="reEnterPassword"
                   value={user.reEnterPassword}
                   onChange={handleChange}
                   placeholder="Re-enter your Password"
-                  className="w-full p-2.5 rounded-lg border-none text-base"
+                  className="w-full p-1.5 border-b-2 border-black bg-transparent outline-none transition-all duration-100 placeholder-white text-white "
+                  required
                 />
-                {errors.reEnterPassword && (
-                  <p className="text-red-700">{errors.reEnterPassword}</p>
-                )}
+                {errors.reEnterPassword && <span className="text-red-700 mt-2">{errors.reEnterPassword}</span>}
               </FormGroup>
-
               <Button
-                className="inline-block px-6 py-1 bg-white text-[#5AB2FF] font-medium border-2 rounded hover:bg-transparent hover:text-white transition-colors duration-300"
+                className="inline-block px-6 py-1 text-[#0D014D] font-medium border-2 border-black rounded hover:bg-[#0D014D] hover:text-white transition-colors duration-300"
                 type="submit"
-                color="success"
               >
                 Register
               </Button>
             </Form>
-
-            <p className="text-white text-center mt-4">
+            <p className="text-black text-center mt-4">
               Already have an account?
-              <Link to="/login" className="text-[#FFFF80]">
+              <Link to="/login" className="text-lg font-semibold text-[#0D014D]">
                 Login
               </Link>
             </p>
-            {/* </div> */}
           </div>
         </div>
-      </section>
-    </div>
+      </div>
+    </section>
+  </div>
   );
 };
 
